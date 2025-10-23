@@ -1,18 +1,18 @@
-import 'dotenv/config';
+//CORRECCIÓN DE CONEXIÓN A SUPABASE
 import pkg from 'pg';
 const { Pool } = pkg;
 
-const config = process.env.DATABASE_URL ? { 
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } // Required for Supabase
-} : {
-  user: process.env.PGUSER || 'postgres',
+const pool = new Pool({
+  host: process.env.PGHOST,
+  port: process.env.PGPORT,
+  database: process.env.PGDATABASE,
+  user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
-  host: process.env.PGHOST || 'db.snrcvzdztdnlcgolxkop.supabase.co',
-  port: Number(process.env.PGPORT || 5432),
-  database: process.env.PGDATABASE || 'postgres',
-  ssl: { rejectUnauthorized: false } // Required for Supabase
-};
+  ssl: { rejectUnauthorized: false },
+});
 
-export const pool = new Pool(config);
-pool.on('error', (err)=>console.error('Unexpected PG error', err));
+pool.on('error', (err) => {
+  console.error('Unexpected PG error', err);
+});
+
+export { pool }; 
