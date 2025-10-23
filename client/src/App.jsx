@@ -253,7 +253,7 @@ function ThemeSwitcher() {
       const body = document.body;
       
       // Limpiar todas las clases de tema
-      body.classList.remove("theme--dark", "theme--light");
+      body.classList.remove("theme--dark", "theme--light", "theme--gray");
       
       if (themeMode === "dark") {
         body.classList.add("theme--dark");
@@ -261,6 +261,9 @@ function ThemeSwitcher() {
       } else if (themeMode === "light") {
         body.classList.add("theme--light");
         console.log("☀️ Aplicando modo claro - Clases:", body.className);
+      } else if (themeMode === "gray") {
+        body.classList.add("theme--gray");
+        console.log("🔘 Aplicando modo gris claro - Clases:", body.className);
       } else {
         // Auto mode - detectar preferencia del sistema
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -305,13 +308,14 @@ function ThemeSwitcher() {
       <option value="auto">Apariencia: Auto</option>
       <option value="light">Claro</option>
       <option value="dark">Oscuro</option>
+      <option value="gray">Gris Claro</option>
     </Select>
   );
 }
 
 function Login({ onAuth }) {
-  const [email, setEmail] = useState("trans@siglad.local");
-  const [password, setPassword] = useState("Trans123$");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -348,7 +352,7 @@ function Login({ onAuth }) {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg mb-6 animate-pulse hover:animate-bounce transition-all duration-300">
             <span className="text-4xl font-bold text-white">S</span>
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
@@ -424,43 +428,6 @@ function Login({ onAuth }) {
             </PrimaryButton>
           </form>
         </div>
-        
-        {/* Test Credentials */}
-        <div className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
-          <div className="flex items-center gap-2 mb-4">
-            <Info className="w-5 h-5 text-blue-600" />
-            <h4 className="font-semibold text-gray-800">Credenciales de prueba</h4>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="p-2 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg">
-                <Truck className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-gray-800">Transportista</div>
-                <div className="text-sm text-gray-600">trans@siglad.local / Trans123$</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="p-2 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-gray-800">Agente</div>
-                <div className="text-sm text-gray-600">agente@siglad.local / Agent123$</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-violet-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg">
-                <Gear className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="font-medium text-gray-800">Administrador</div>
-                <div className="text-sm text-gray-600">admin@siglad.local / Admin123$</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -485,8 +452,15 @@ function Transportista() {
   const [qImp, setQImp] = useState("");
   const [exps, setExps] = useState([]);
   const [qExp, setQExp] = useState("");
+  // Generar número de documento único automáticamente
+  const generateDocumentNumber = () => {
+    const timestamp = Date.now().toString();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `DUCA-${timestamp}-${random}`.slice(0, 20);
+  };
+
   const [form, setForm] = useState({
-    numeroDocumento: "",
+    numeroDocumento: generateDocumentNumber(),
     fechaEmision: "",
     paisEmisor: "GT",
     tipoOperacion: "IMPORTACION",
@@ -498,17 +472,32 @@ function Transportista() {
       conductor: { nombreConductor: "", licenciaConductor: "", paisLicencia: "GT" },
       ruta: { aduanaSalida: "", aduanaEntrada: "", paisDestino: "SV", kilometrosAproximados: "" },
     },
-    valores: { valorFactura: "", gastosTransporte: "", seguro: "", otrosGastos: "", valorAduanaTotal: "", moneda: "USD" },
+    valores: { valorFactura: "", gastosTransporte: "", seguro: "", otrosGastos: "", valorAduanaTotal: "0.00", moneda: "USD" },
     resultadoSelectivo: { codigo: "", descripcion: "" },
     estadoDocumento: "CONFIRMADO",
     firmaElectronica: "",
   });
   const [items, setItems] = useState([{ linea: 1, descripcion: "", cantidad: "", unidadMedida: "", valorUnitario: "", paisOrigen: "GT" }]);
+  const [tab, setTab] = useState("registro");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
 
   const load = async () => {
     setLoading(true);
     try {
-      const data = await fetcher("/status/mine");
+      let url = "/status/mine";
+      const params = [];
+      
+      if (fechaInicio || fechaFin) {
+        const queryParams = [];
+        if (fechaInicio) queryParams.push(`fechaInicio=${fechaInicio}`);
+        if (fechaFin) queryParams.push(`fechaFin=${fechaFin}`);
+        url += `?${queryParams.join('&')}`;
+      }
+      
+      console.log('🔍 Cargando declaraciones con URL:', url);
+      const data = await fetcher(url);
+      console.log('📦 Declaraciones recibidas:', data);
       setList(data);
     } catch (error) {
       showError("Error al cargar declaraciones", error.message);
@@ -536,10 +525,15 @@ function Transportista() {
   };
 
   useEffect(() => {
-    load();
     loadImps();
     loadExps();
   }, []);
+  
+  useEffect(() => {
+    if (tab === "declaraciones") {
+      load();
+    }
+  }, [tab, fechaInicio, fechaFin]);
 
   const addItem = () => {
     const next = (items[items.length - 1]?.linea || 0) + 1;
@@ -553,12 +547,6 @@ function Transportista() {
     setSubmitting(true);
     
     // Validaciones
-    if (!form.numeroDocumento.trim()) {
-      showWarning("Campo requerido", "El número de documento es obligatorio");
-      setSubmitting(false);
-      return;
-    }
-    
     if (!form.fechaEmision) {
       showWarning("Campo requerido", "La fecha de emisión es obligatoria");
       setSubmitting(false);
@@ -665,19 +653,20 @@ function Transportista() {
       
       showSuccess("¡Declaración registrada!", "La declaración DUCA ha sido registrada exitosamente");
       
-      // Limpiar formulario
+      // Limpiar formulario y generar nuevo número de documento
       setItems([{ linea: 1, descripcion: "", cantidad: "", unidadMedida: "", valorUnitario: "", paisOrigen: "GT" }]);
       setForm((f) => ({
         ...f,
-        numeroDocumento: "",
+        numeroDocumento: generateDocumentNumber(), // Generar nuevo número
         fechaEmision: "",
         exportador: { ...f.exportador, idExportador: "", nombreExportador: "" },
         importador: { ...f.importador, idImportador: "", nombreImportador: "" },
         transporte: { ...f.transporte, placaVehiculo: "" },
-        valores: { ...f.valores, valorFactura: "", gastosTransporte: "", seguro: "", otrosGastos: "", valorAduanaTotal: "" },
+        valores: { ...f.valores, valorFactura: "", gastosTransporte: "", seguro: "", otrosGastos: "", valorAduanaTotal: "0.00" },
       }));
       
-      await load();
+      // No cargar automáticamente, solo cambiar de pestaña
+      setTab("declaraciones");
     } catch (e) {
       console.error('❌ Error al registrar declaración:', e);
       showError("Error al registrar declaración", e?.error || e.message);
@@ -686,8 +675,38 @@ function Transportista() {
     }
   };
 
+  // Calcular estadísticas para dashboard
+  const stats = {
+    total: list.length,
+    validadas: list.filter(x => x.estado === "VALIDADA").length,
+    rechazadas: list.filter(x => x.estado === "RECHAZADA").length,
+    enRevision: list.filter(x => x.estado === "EN REVISION").length,
+    confirmadas: list.filter(x => x.estado === "CONFIRMADO").length,
+    pendientes: list.filter(x => x.estado === "PENDIENTE").length,
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Pestañas de navegación */}
+      <div className="card card-pad inline-flex gap-2">
+        <Button 
+          className={`${tab === "registro" ? "btn-solid text-white" : "btn-ghost text-[var(--text)] border-[var(--border)]"} h-12 px-6`} 
+          onClick={() => setTab("registro")}
+        >
+          <FileText className="w-4 h-4" />
+          Registro DUCA
+        </Button>
+        <Button 
+          className={`${tab === "declaraciones" ? "btn-solid text-white" : "btn-ghost text-[var(--text)] border-[var(--border)]"} h-12 px-6`} 
+          onClick={() => setTab("declaraciones")}
+        >
+          <ListBullets className="w-4 h-4" />
+          Mis Declaraciones
+        </Button>
+      </div>
+
+      {/* Contenido de las pestañas */}
+      {tab === "registro" && (
       <form onSubmit={registrar} className="section">
         <h2 className="h2">Registro de Declaración DUCA</h2>
         
@@ -699,14 +718,27 @@ function Transportista() {
           </h3>
           <div className="field-group two-cols">
             <div className="field">
-              <label className="label">Número de Documento *</label>
-              <Input 
-                placeholder="Ingrese el número de documento" 
-                value={form.numeroDocumento} 
-                onChange={(e) => setForm({ ...form, numeroDocumento: e.target.value.slice(0, 20) })}
-                maxLength={20}
-                required
-              />
+              <label className="label flex items-center gap-2">
+                Número de Documento (Generado Automáticamente)
+                <div className="group relative">
+                  <Info className="w-4 h-4 text-blue-500 cursor-help" />
+                  <div className="absolute left-0 top-6 hidden group-hover:block z-50 w-64 p-3 bg-gray-800 text-white text-xs rounded-lg shadow-lg">
+                    Este código único es generado automáticamente por el sistema y no puede ser modificado
+                  </div>
+                </div>
+              </label>
+              <div className="relative">
+                <Input 
+                  value={form.numeroDocumento} 
+                  readOnly
+                  disabled
+                  className="bg-gray-100 dark:bg-gray-800 cursor-not-allowed font-mono text-sm font-semibold"
+                  title="Código generado automáticamente por el sistema"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Shield className="w-5 h-5 text-green-500" />
+                </div>
+              </div>
             </div>
             <div className="field">
               <label className="label">Fecha de Emisión *</label>
@@ -718,7 +750,7 @@ function Transportista() {
               />
             </div>
           </div>
-          <div className="field-group three-cols">
+          <div className="field-group two-cols">
             <div className="field">
               <label className="label">País Emisor</label>
               <Select value={form.paisEmisor} onChange={(e) => setForm({ ...form, paisEmisor: e.target.value })}>
@@ -729,12 +761,6 @@ function Transportista() {
               <label className="label">Tipo de Operación</label>
               <Select value={form.tipoOperacion} onChange={(e) => setForm({ ...form, tipoOperacion: e.target.value })}>
                 {TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
-              </Select>
-            </div>
-            <div className="field">
-              <label className="label">Moneda</label>
-              <Select value={form.valores.moneda} onChange={(e) => setForm({ ...form, valores: { ...form.valores, moneda: e.target.value } })}>
-                {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
               </Select>
             </div>
           </div>
@@ -947,57 +973,6 @@ function Transportista() {
           </div>
         </div>
 
-        {/* Valores */}
-        <div className="form-section">
-          <h3 className="form-section-title flex items-center gap-2">
-            <CurrencyDollar className="w-5 h-5" />
-            Valores Comerciales
-          </h3>
-          <div className="field-group four-cols">
-            {[
-              ["valorFactura", "Valor de Factura", "Valor de la factura comercial"],
-              ["gastosTransporte", "Gastos de Transporte", "Costos de transporte"],
-              ["seguro", "Seguro", "Costo del seguro"],
-              ["otrosGastos", "Otros Gastos", "Otros gastos adicionales"],
-            ].map(([key, label, placeholder]) => (
-              <div key={key} className="field">
-                <label className="label">{label}</label>
-                <Input 
-                  placeholder={placeholder}
-                  type="number"
-                  inputMode="decimal" 
-                  value={form.valores[key]} 
-                  onChange={(e) => setForm({ ...form, valores: { ...form.valores, [key]: e.target.value.replace(/[^0-9.]/g, "") } })}
-                  step="0.01"
-                  min="0"
-                />
-              </div>
-            ))}
-          </div>
-          <div className="field-group two-cols">
-            <div className="field">
-              <label className="label">Valor Aduana Total *</label>
-              <Input 
-                placeholder="Valor total para aduana" 
-                type="number"
-                inputMode="decimal" 
-                value={form.valores.valorAduanaTotal} 
-                onChange={(e) => setForm({ ...form, valores: { ...form.valores, valorAduanaTotal: e.target.value.replace(/[^0-9.]/g, "") } })}
-                step="0.01"
-                min="0"
-                required
-                className={!form.valores.valorAduanaTotal ? 'border-red-300' : ''}
-              />
-            </div>
-            <div className="field">
-              <label className="label">Moneda</label>
-              <Select value={form.valores.moneda} onChange={(e) => setForm({ ...form, valores: { ...form.valores, moneda: e.target.value } })}>
-                {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
-              </Select>
-            </div>
-          </div>
-        </div>
-
         {/* Mercancías */}
         <div className="form-section">
           <div className="flex items-center justify-between mb-4">
@@ -1015,100 +990,243 @@ function Transportista() {
           </div>
           
           <div className="space-y-4">
-            {items.map((it, i) => (
-              <div key={i} className="bg-[var(--card)] rounded-lg p-4 border-2 border-[var(--border)] shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-[var(--text)]">Línea {it.linea}</span>
-                  {items.length > 1 && (
-                    <Button 
-                      type="button" 
-                      variant="danger" 
-                      className="btn-sm"
-                      onClick={() => delItem(i)}
-                    >
-                      <Trash className="w-4 h-4" />
-                      Eliminar
-                    </Button>
-                  )}
+            {items.map((it, i) => {
+              const cantidad = parseFloat(it.cantidad) || 0;
+              const valorUnitario = parseFloat(it.valorUnitario) || 0;
+              const subtotal = (cantidad * valorUnitario).toFixed(2);
+              
+              return (
+                <div key={i} className="bg-[var(--card)] rounded-lg p-4 border-2 border-[var(--border)] shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-[var(--text)]">Línea {it.linea}</span>
+                    {items.length > 1 && (
+                      <Button 
+                        type="button" 
+                        variant="danger" 
+                        className="btn-sm"
+                        onClick={() => delItem(i)}
+                      >
+                        <Trash className="w-4 h-4" />
+                        Eliminar
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="grid md:grid-cols-6 gap-3">
+                    <div className="field">
+                      <label className="label text-xs">Línea</label>
+                      <Input 
+                        placeholder="1" 
+                        type="number"
+                        inputMode="numeric" 
+                        value={it.linea} 
+                        onChange={(e) => updItem(i, { linea: e.target.value.replace(/[^0-9]/g, "") })}
+                        min="1"
+                      />
+                    </div>
+                    
+                    <div className="field md:col-span-2">
+                      <label className="label text-xs">Descripción *</label>
+                      <Input 
+                        placeholder="Descripción de la mercancía" 
+                        value={it.descripcion} 
+                        onChange={(e) => updItem(i, { descripcion: e.target.value.slice(0, 120) })}
+                        maxLength={120}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="field">
+                      <label className="label text-xs">Cantidad *</label>
+                      <Input 
+                        placeholder="0" 
+                        type="number"
+                        inputMode="numeric" 
+                        value={it.cantidad} 
+                        onChange={(e) => {
+                          updItem(i, { cantidad: e.target.value.replace(/[^0-9]/g, "") });
+                          // Actualizar valor de factura
+                          setTimeout(() => {
+                            const totalMercancias = items.reduce((sum, item, idx) => {
+                              const cant = idx === i ? parseFloat(e.target.value.replace(/[^0-9]/g, "")) || 0 : parseFloat(item.cantidad) || 0;
+                              const valUnit = parseFloat(item.valorUnitario) || 0;
+                              return sum + (cant * valUnit);
+                            }, 0);
+                            const newValues = { ...form.valores, valorFactura: totalMercancias.toFixed(2) };
+                            const gastosTransporte = parseFloat(newValues.gastosTransporte) || 0;
+                            const seguro = parseFloat(newValues.seguro) || 0;
+                            const otrosGastos = parseFloat(newValues.otrosGastos) || 0;
+                            newValues.valorAduanaTotal = (totalMercancias + gastosTransporte + seguro + otrosGastos).toFixed(2);
+                            setForm({ ...form, valores: newValues });
+                          }, 0);
+                        }}
+                        min="0"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="field">
+                      <label className="label text-xs">Unidad *</label>
+                      <Select 
+                        value={it.unidadMedida} 
+                        onChange={(e) => updItem(i, { unidadMedida: e.target.value })}
+                        className="unidad-select"
+                        required
+                      >
+                        <option value="" disabled>Seleccione unidad</option>
+                        {UNIDADES_MEDIDA.map((unidad) => (
+                          <option key={unidad} value={unidad}>{unidad}</option>
+                        ))}
+                      </Select>
+                    </div>
+                    
+                    <div className="field">
+                      <label className="label text-xs">País Origen</label>
+                      <Select value={it.paisOrigen} onChange={(e) => updItem(i, { paisOrigen: e.target.value })}>
+                        {PAISES_2.map((p) => <option key={p} value={p}>{p}</option>)}
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 grid md:grid-cols-2 gap-3">
+                    <div className="field">
+                      <label className="label text-xs">Valor Unitario *</label>
+                      <Input 
+                        placeholder="0.00" 
+                        type="number"
+                        inputMode="decimal" 
+                        value={it.valorUnitario} 
+                        onChange={(e) => {
+                          updItem(i, { valorUnitario: e.target.value.replace(/[^0-9.]/g, "") });
+                          // Actualizar valor de factura
+                          setTimeout(() => {
+                            const totalMercancias = items.reduce((sum, item, idx) => {
+                              const cant = parseFloat(item.cantidad) || 0;
+                              const valUnit = idx === i ? parseFloat(e.target.value.replace(/[^0-9.]/g, "")) || 0 : parseFloat(item.valorUnitario) || 0;
+                              return sum + (cant * valUnit);
+                            }, 0);
+                            const newValues = { ...form.valores, valorFactura: totalMercancias.toFixed(2) };
+                            const gastosTransporte = parseFloat(newValues.gastosTransporte) || 0;
+                            const seguro = parseFloat(newValues.seguro) || 0;
+                            const otrosGastos = parseFloat(newValues.otrosGastos) || 0;
+                            newValues.valorAduanaTotal = (totalMercancias + gastosTransporte + seguro + otrosGastos).toFixed(2);
+                            setForm({ ...form, valores: newValues });
+                          }, 0);
+                        }}
+                        step="0.01"
+                        min="0"
+                        required
+                      />
+                    </div>
+                    <div className="field">
+                      <label className="label text-xs">Subtotal</label>
+                      <Input 
+                        value={subtotal}
+                        readOnly
+                        disabled
+                        className="bg-gray-100 dark:bg-gray-800 cursor-not-allowed font-semibold text-blue-600 dark:text-blue-400"
+                      />
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="grid md:grid-cols-6 gap-3">
-                  <div className="field">
-                    <label className="label text-xs">Línea</label>
-                    <Input 
-                      placeholder="1" 
-                      type="number"
-                      inputMode="numeric" 
-                      value={it.linea} 
-                      onChange={(e) => updItem(i, { linea: e.target.value.replace(/[^0-9]/g, "") })}
-                      min="1"
-                    />
-                  </div>
-                  
-                  <div className="field md:col-span-2">
-                    <label className="label text-xs">Descripción *</label>
-                    <Input 
-                      placeholder="Descripción de la mercancía" 
-                      value={it.descripcion} 
-                      onChange={(e) => updItem(i, { descripcion: e.target.value.slice(0, 120) })}
-                      maxLength={120}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="field">
-                    <label className="label text-xs">Cantidad *</label>
-                    <Input 
-                      placeholder="0" 
-                      type="number"
-                      inputMode="numeric" 
-                      value={it.cantidad} 
-                      onChange={(e) => updItem(i, { cantidad: e.target.value.replace(/[^0-9]/g, "") })}
-                      min="0"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="field">
-                    <label className="label text-xs">Unidad *</label>
-                    <Select 
-                      value={it.unidadMedida} 
-                      onChange={(e) => updItem(i, { unidadMedida: e.target.value })}
-                      className="unidad-select"
-                      required
-                    >
-                      <option value="" disabled>Seleccione unidad</option>
-                      {UNIDADES_MEDIDA.map((unidad) => (
-                        <option key={unidad} value={unidad}>{unidad}</option>
-                      ))}
-                    </Select>
-                  </div>
-                  
-                  <div className="field">
-                    <label className="label text-xs">País Origen</label>
-                    <Select value={it.paisOrigen} onChange={(e) => updItem(i, { paisOrigen: e.target.value })}>
-                      {PAISES_2.map((p) => <option key={p} value={p}>{p}</option>)}
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="mt-3">
-                  <div className="field">
-                    <label className="label text-xs">Valor Unitario *</label>
-                    <Input 
-                      placeholder="0.00" 
-                      type="number"
-                      inputMode="decimal" 
-                      value={it.valorUnitario} 
-                      onChange={(e) => updItem(i, { valorUnitario: e.target.value.replace(/[^0-9.]/g, "") })}
-                      step="0.01"
-                      min="0"
-                      required
-                    />
-                  </div>
-                </div>
+              );
+            })}
+            
+            {/* Total de mercancías */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border-2 border-blue-200 dark:border-blue-800">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-[var(--text)]">Total de Mercancías:</span>
+                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {form.valores.moneda} {items.reduce((sum, item) => {
+                    const cantidad = parseFloat(item.cantidad) || 0;
+                    const valorUnitario = parseFloat(item.valorUnitario) || 0;
+                    return sum + (cantidad * valorUnitario);
+                  }, 0).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Valores */}
+        <div className="form-section">
+          <h3 className="form-section-title flex items-center gap-2">
+            <CurrencyDollar className="w-5 h-5" />
+            Valores Comerciales
+          </h3>
+          {/* Moneda primero */}
+          <div className="field-group">
+            <div className="field">
+              <label className="label">Moneda *</label>
+              <Select value={form.valores.moneda} onChange={(e) => setForm({ ...form, valores: { ...form.valores, moneda: e.target.value } })}>
+                {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
+              </Select>
+            </div>
+          </div>
+          {/* Campos de valores individuales */}
+          <div className="field-group four-cols">
+            <div className="field">
+              <label className="label">Valor de Factura (Calculado automáticamente)</label>
+              <Input 
+                placeholder="Calculado desde mercancías"
+                type="text"
+                value={form.valores.valorFactura} 
+                readOnly
+                disabled
+                className="bg-gray-100 dark:bg-gray-800 cursor-not-allowed font-semibold text-blue-600 dark:text-blue-400"
+              />
+            </div>
+            {[
+              ["gastosTransporte", "Gastos de Transporte", "Costos de transporte"],
+              ["seguro", "Seguro", "Costo del seguro"],
+              ["otrosGastos", "Otros Gastos", "Otros gastos adicionales"],
+            ].map(([key, label, placeholder]) => (
+              <div key={key} className="field">
+                <label className="label">{label}</label>
+                <Input 
+                  placeholder={placeholder}
+                  type="number"
+                  inputMode="decimal" 
+                  value={form.valores[key]} 
+                  onChange={(e) => {
+                    const newValues = { ...form.valores, [key]: e.target.value.replace(/[^0-9.]/g, "") };
+                    // Calcular automáticamente el total
+                    const valorFactura = parseFloat(newValues.valorFactura) || 0;
+                    const gastosTransporte = parseFloat(newValues.gastosTransporte) || 0;
+                    const seguro = parseFloat(newValues.seguro) || 0;
+                    const otrosGastos = parseFloat(newValues.otrosGastos) || 0;
+                    const total = (valorFactura + gastosTransporte + seguro + otrosGastos).toFixed(2);
+                    newValues.valorAduanaTotal = total;
+                    setForm({ ...form, valores: newValues });
+                  }}
+                  step="0.01"
+                  min="0"
+                />
               </div>
             ))}
+          </div>
+          {/* Valor Aduana Total calculado automáticamente */}
+          <div className="field-group">
+            <div className="field">
+              <label className="label flex items-center gap-2">
+                Valor Aduana Total (Calculado Automáticamente) *
+                <div className="group relative">
+                  <Info className="w-4 h-4 text-blue-500 cursor-help" />
+                  <div className="absolute left-0 top-6 hidden group-hover:block z-50 w-64 p-3 bg-gray-800 text-white text-xs rounded-lg shadow-lg">
+                    Este valor se calcula automáticamente sumando: Valor Factura + Gastos Transporte + Seguro + Otros Gastos
+                  </div>
+                </div>
+              </label>
+              <Input 
+                placeholder="Se calcula automáticamente" 
+                type="text"
+                value={form.valores.valorAduanaTotal} 
+                readOnly
+                disabled
+                className="bg-gray-100 dark:bg-gray-800 cursor-not-allowed font-semibold text-lg text-green-600 dark:text-green-400"
+                title="Valor calculado automáticamente"
+              />
+            </div>
           </div>
         </div>
 
@@ -1121,12 +1239,16 @@ function Transportista() {
           <div className="field-group two-cols">
             <div className="field">
               <label className="label">Código Selectivo</label>
-              <Input 
-                placeholder="Código" 
+              <Select 
                 value={form.resultadoSelectivo.codigo} 
-                onChange={(e) => setForm({ ...form, resultadoSelectivo: { ...form.resultadoSelectivo, codigo: e.target.value.slice(0, 1) } })}
-                maxLength={1}
-              />
+                onChange={(e) => setForm({ ...form, resultadoSelectivo: { ...form.resultadoSelectivo, codigo: e.target.value } })}
+              >
+                <option value="">Seleccione un código</option>
+                <option value="V">V - Verde (Despacho directo)</option>
+                <option value="A">A - Amarillo (Revisión documental)</option>
+                <option value="R">R - Rojo (Revisión física)</option>
+                <option value="N">N - Negro (Canal de auditoría)</option>
+              </Select>
             </div>
             <div className="field">
               <label className="label">Descripción Selectiva</label>
@@ -1170,55 +1292,233 @@ function Transportista() {
           </PrimaryButton>
         </div>
       </form>
+      )}
 
-      <Card title={
-        <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          Mis Declaraciones
-        </div>
-      } className="fade-in">
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="spinner mr-3"></div>
-            <span className="text-[var(--subtle)]">Cargando declaraciones...</span>
+      {/* Pestaña de Declaraciones con Dashboard */}
+      {tab === "declaraciones" && (
+        <div className="space-y-6">
+          {/* Dashboard de Estadísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card title="Total" className="fade-in">
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-[var(--text)]">{stats.total}</div>
+                <FileText className="w-10 h-10 text-blue-500" />
+              </div>
+              <div className="text-xs text-[var(--subtle)] mt-2">Declaraciones totales</div>
+            </Card>
+            
+            <Card title="Pendientes" className="fade-in">
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-gray-600">{stats.pendientes}</div>
+                <Clock className="w-10 h-10 text-gray-500" />
+              </div>
+              <div className="text-xs text-[var(--subtle)] mt-2">En proceso</div>
+            </Card>
+            
+            <Card title="Validadas" className="fade-in">
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-green-600">{stats.validadas}</div>
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <div className="text-xs text-[var(--subtle)] mt-2">Aprobadas</div>
+            </Card>
+            
+            <Card title="Rechazadas" className="fade-in">
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-red-600">{stats.rechazadas}</div>
+                <XCircle className="w-10 h-10 text-red-500" />
+              </div>
+              <div className="text-xs text-[var(--subtle)] mt-2">No aprobadas</div>
+            </Card>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {list.map((x) => (
-              <div key={x.id} className="flex items-center justify-between p-4 bg-[var(--card)] rounded-lg border-2 border-[var(--border)] hover:bg-[var(--bg)] hover:border-[var(--primary)] transition-all duration-200 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-[var(--primary)]"></div>
-                  <div>
-                    <div className="font-semibold text-[var(--text)]">{x.numero_documento}</div>
-                    <div className="text-sm text-[var(--subtle)]">
-                      {x.fecha_emision && new Date(x.fecha_emision).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`badge ${
-                    x.estado === "VALIDADA" ? "badge-success" :
-                    x.estado === "RECHAZADA" ? "badge-error" :
-                    x.estado === "EN REVISION" ? "badge-warning" : "badge-mute"
-                  }`}>
-                    {x.estado === "VALIDADA" && <CheckCircle className="w-3 h-3" />}
-                    {x.estado === "RECHAZADA" && <XCircle className="w-3 h-3" />}
-                    {x.estado === "EN REVISION" && <Clock className="w-3 h-3" />}
-                    {x.estado}
+
+          {/* Filtros por fecha */}
+          <Card title={
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Filtrar por Fecha
+            </div>
+          } className="fade-in">
+            <div className="flex items-end gap-4">
+              <div className="field flex-1">
+                <label className="label">Fecha Inicio</label>
+                <Input 
+                  type="date" 
+                  value={fechaInicio} 
+                  onChange={(e) => setFechaInicio(e.target.value)}
+                  className="transition-all duration-300 focus:scale-105"
+                />
+              </div>
+              <div className="field flex-1">
+                <label className="label">Fecha Fin</label>
+                <Input 
+                  type="date" 
+                  value={fechaFin} 
+                  onChange={(e) => setFechaFin(e.target.value)}
+                  className="transition-all duration-300 focus:scale-105"
+                />
+              </div>
+              <SecondaryButton 
+                onClick={() => {
+                  setFechaInicio("");
+                  setFechaFin("");
+                }} 
+                className="h-10"
+              >
+                Limpiar
+              </SecondaryButton>
+            </div>
+            {(fechaInicio || fechaFin) && (
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg animate-pulse">
+                <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+                  <Info className="w-4 h-4" />
+                  <span>
+                    {fechaInicio && fechaFin 
+                      ? `Mostrando declaraciones desde ${new Date(fechaInicio).toLocaleDateString()} hasta ${new Date(fechaFin).toLocaleDateString()}`
+                      : fechaInicio 
+                      ? `Mostrando declaraciones desde ${new Date(fechaInicio).toLocaleDateString()}`
+                      : `Mostrando declaraciones hasta ${new Date(fechaFin).toLocaleDateString()}`
+                    }
                   </span>
                 </div>
               </div>
-            ))}
-            {!list.length && (
-              <div className="empty">
-                <FileText className="empty-icon" />
-                <div className="text-[var(--subtle)]">No tienes declaraciones registradas aún</div>
-                <div className="text-sm text-[var(--muted)] mt-1">Registra tu primera declaración DUCA usando el formulario de arriba</div>
+            )}
+          </Card>
+
+          {/* Lista de Declaraciones */}
+          <Card title={
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Mis Declaraciones ({list.length})
+            </div>
+          } className="fade-in">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="spinner mr-3"></div>
+                <span className="text-[var(--subtle)]">Cargando declaraciones...</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {list.map((x, index) => (
+                  <div 
+                    key={x.id} 
+                    className="group relative bg-gradient-to-r from-[var(--card)] to-[var(--bg)] rounded-2xl border-2 border-[var(--border)] hover:border-[var(--primary)] transition-all duration-300 shadow-md hover:shadow-2xl hover:scale-[1.02] overflow-hidden"
+                    style={{
+                      animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
+                    }}
+                  >
+                    {/* Indicador de estado lateral */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-2 ${
+                      x.estado === "VALIDADA" ? "bg-gradient-to-b from-green-400 to-green-600" :
+                      x.estado === "RECHAZADA" ? "bg-gradient-to-b from-red-400 to-red-600" :
+                      x.estado === "EN REVISION" ? "bg-gradient-to-b from-yellow-400 to-yellow-600" :
+                      "bg-gradient-to-b from-gray-400 to-gray-600"
+                    } group-hover:w-3 transition-all duration-300`}></div>
+                    
+                    <div className="p-6 pl-8">
+                      {/* Header con número de documento y estado */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <FileText className="w-6 h-6 text-[var(--primary)] animate-pulse" />
+                            <h3 className="text-xl font-bold text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
+                              {x.numero_documento}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-[var(--subtle)]">
+                            <Calendar className="w-4 h-4" />
+                            <span className="font-medium">
+                              Emitido: {x.fecha_emision && new Date(x.fecha_emision).toLocaleDateString('es-ES', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                        <span className={`badge text-sm px-4 py-2 font-semibold shadow-lg ${
+                          x.estado === "VALIDADA" ? "badge-success" :
+                          x.estado === "RECHAZADA" ? "badge-error" :
+                          x.estado === "EN REVISION" ? "badge-warning" : "badge-mute"
+                        }`}>
+                          {x.estado === "VALIDADA" && <CheckCircle className="w-4 h-4" />}
+                          {x.estado === "RECHAZADA" && <XCircle className="w-4 h-4" />}
+                          {x.estado === "EN REVISION" && <Clock className="w-4 h-4" />}
+                          {x.estado}
+                        </span>
+                      </div>
+                      
+                      {/* Detalles de la declaración */}
+                      <div className="grid md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-[var(--border)]">
+                        <div className="flex items-center gap-3 p-3 bg-[var(--bg)] rounded-lg hover:bg-[var(--primary-light)] transition-colors duration-200">
+                          <div className="p-2 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg shadow-md">
+                            <Building className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-[var(--subtle)] font-medium uppercase tracking-wide">Exportador</div>
+                            <div className="text-sm font-semibold text-[var(--text)] truncate" title={x.exportador_nombre}>
+                              {x.exportador_nombre || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-3 bg-[var(--bg)] rounded-lg hover:bg-[var(--primary-light)] transition-colors duration-200">
+                          <div className="p-2 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg shadow-md">
+                            <UserCircle className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-[var(--subtle)] font-medium uppercase tracking-wide">Importador</div>
+                            <div className="text-sm font-semibold text-[var(--text)] truncate" title={x.importador_nombre}>
+                              {x.importador_nombre || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-3 bg-[var(--bg)] rounded-lg hover:bg-[var(--primary-light)] transition-colors duration-200">
+                          <div className="p-2 bg-gradient-to-br from-green-400 to-green-600 rounded-lg shadow-md">
+                            <CurrencyDollar className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-xs text-[var(--subtle)] font-medium uppercase tracking-wide">Valor Total</div>
+                            <div className="text-sm font-bold text-[var(--text)]">
+                              {x.moneda} {x.valor_aduana_total ? Number(x.valor_aduana_total).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Info adicional */}
+                      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[var(--border)] text-xs text-[var(--subtle)]">
+                        <div className="flex items-center gap-1">
+                          <Globe className="w-3 h-3" />
+                          <span>País: {x.pais_emisor || 'N/A'}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Truck className="w-3 h-3" />
+                          <span>Transporte: {x.medio_transporte || 'N/A'}</span>
+                        </div>
+                        {x.tipo_operacion && (
+                          <div className="flex items-center gap-1">
+                            <Package className="w-3 h-3" />
+                            <span>Tipo: {x.tipo_operacion}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {!list.length && (
+                  <div className="empty">
+                    <FileText className="empty-icon" />
+                    <div className="text-[var(--subtle)]">No se encontraron declaraciones</div>
+                    <div className="text-sm text-[var(--muted)] mt-1">Intenta ajustar los filtros de fecha o registra una nueva declaración</div>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
-      </Card>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

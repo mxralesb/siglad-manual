@@ -50,7 +50,7 @@ END$$;
 
 -- Importadores
 CREATE TABLE public.importers (
-  id         VARCHAR(15)  PRIMARY KEY,
+  id         SERIAL       PRIMARY KEY,
   nombre     VARCHAR(100) NOT NULL,
   estado     VARCHAR(10)  NOT NULL DEFAULT 'ACTIVO' CHECK (estado IN ('ACTIVO','INACTIVO')),
   created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -66,7 +66,7 @@ END$$;
 
 -- Exportadores
 CREATE TABLE public.exporters (
-  id         VARCHAR(15)  PRIMARY KEY,
+  id         SERIAL       PRIMARY KEY,
   nombre     VARCHAR(100) NOT NULL,
   estado     VARCHAR(10)  NOT NULL DEFAULT 'ACTIVO' CHECK (estado IN ('ACTIVO','INACTIVO')),
   created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -93,14 +93,14 @@ CREATE TABLE public.declarations (
   tipo_operacion             VARCHAR(20)   NOT NULL,
 
   -- Exportador (valor de la DUCA, no FK obligatoria)
-  exportador_id              VARCHAR(15)   NOT NULL,
+  exportador_id              INTEGER       NOT NULL,
   exportador_nombre          VARCHAR(100)  NOT NULL,
   exportador_direccion       VARCHAR(120),
   exportador_tel             VARCHAR(15),
   exportador_email           VARCHAR(60),
 
   -- Importador (valor de la DUCA, no FK obligatoria)
-  importador_id              VARCHAR(15)   NOT NULL,
+  importador_id              INTEGER       NOT NULL,
   importador_nombre          VARCHAR(100)  NOT NULL,
   importador_direccion       VARCHAR(120),
   importador_tel             VARCHAR(15),

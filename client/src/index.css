@@ -504,6 +504,16 @@ body.theme--dark .td {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px) scale(0.95);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1);
+  }
+}
 @keyframes slideIn {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
@@ -511,6 +521,9 @@ body.theme--dark .td {
 
 .fade-in {
   animation: fadeIn 0.3s ease-out;
+}
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
 }
 .slide-in {
   animation: slideIn 0.3s ease-out;
@@ -606,6 +619,85 @@ body.theme--light {
   --badge-info-fg: #1E40AF;
   --badge-mute-bg: #F1F5F9;
   --badge-mute-fg: #64748B;
+}
+
+/* Modo gris claro */
+body.theme--gray {
+  --bg: #E5E7EB;
+  --card: #F9FAFB;
+  --border: #D1D5DB;
+  --text: #1F2937;
+  --subtle: #6B7280;
+  --muted: #9CA3AF;
+
+  --primary: #4B5563;
+  --primary-hover: #374151;
+  --primary-light: #F3F4F6;
+
+  --secondary: #6B7280;
+  --secondary-hover: #4B5563;
+  --secondary-light: #F3F4F6;
+
+  --accent: #6B7280;
+  --accent-hover: #4B5563;
+  --accent-light: #F3F4F6;
+
+  --success: #059669;
+  --warning: #D97706;
+  --error: #DC2626;
+  --info: #4B5563;
+
+  --badge-success-bg: #D1FAE5;
+  --badge-success-fg: #065F46;
+  --badge-warning-bg: #FEF3C7;
+  --badge-warning-fg: #92400E;
+  --badge-error-bg: #FEE2E2;
+  --badge-error-fg: #991B1B;
+  --badge-info-bg: #F3F4F6;
+  --badge-info-fg: #374151;
+  --badge-mute-bg: #F3F4F6;
+  --badge-mute-fg: #6B7280;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.12), 0 2px 4px -2px rgb(0 0 0 / 0.12);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.12), 0 4px 6px -4px rgb(0 0 0 / 0.12);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.12), 0 8px 10px -6px rgb(0 0 0 / 0.12);
+}
+
+/* Aplicar fondo gris claro al body */
+body.theme--gray {
+  background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%) !important;
+}
+
+/* Header en modo gris claro */
+body.theme--gray .header {
+  background: rgba(249, 250, 251, 0.98) !important;
+  border-color: #D1D5DB !important;
+}
+
+/* Estilos para tablas en modo gris */
+body.theme--gray .th {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+}
+
+body.theme--gray .td {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+/* Botones en modo gris */
+body.theme--gray .btn-ghost {
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+body.theme--gray .btn-ghost:hover {
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
 }
 
 /* Clases personalizadas para colores más claros en modo claro */
