@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { DeclarationsPieChart, DeclarationsBarChart } from './charts.jsx';
+import MapaRuta from './mapa-ruta.jsx';
 import Swal from 'sweetalert2';
 import { 
   User, 
@@ -44,6 +46,14 @@ const getThemeConfig = () => {
     cancelButtonColor: isDark ? '#94A3B8' : '#6B7280',
     iconColor: isDark ? '#60A5FA' : '#2563EB'
   };
+};
+
+const formatCurrency = (value, currency) => {
+  const number = Number(value);
+  if (isNaN(number)) {
+    return `0.00 ${currency}`;
+  }
+  return `${number.toFixed(2)} ${currency}`;
 };
 
 const showSuccess = (title, text = '') => {
@@ -170,7 +180,7 @@ function Card({ title, actions, children, className = "" }) {
   );
 }
 
-function Button({ variant = "ghost", className = "", loading = false, children, ...props }) {
+export function Button({ variant = "ghost", className = "", loading = false, children, ...props }) {
   const base = "btn";
   const map = { 
     solid: "btn-solid", 
@@ -199,7 +209,7 @@ function SecondaryButton(props) {
   return <Button variant="secondary" {...props} />;
 }
 
-function Input({ className, ...props }) {
+export function Input({ className, ...props }) {
   return <input className={`input ${className || ''}`} {...props} />;
 }
 
@@ -452,6 +462,8 @@ function Transportista() {
   const [qImp, setQImp] = useState("");
   const [exps, setExps] = useState([]);
   const [qExp, setQExp] = useState("");
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const [exchangeRates, setExchangeRates] = useState(null);
   // Generar número de documento único automáticamente
   const generateDocumentNumber = () => {
     const timestamp = Date.now().toString();
@@ -527,6 +539,20 @@ function Transportista() {
   useEffect(() => {
     loadImps();
     loadExps();
+
+    const fetchRates = async () => {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data.result === 'success') {
+          setExchangeRates(data.rates);
+        }
+      } catch (error) {
+        console.error("Error fetching exchange rates:", error);
+      }
+    };
+
+    fetchRates();
   }, []);
   
   useEffect(() => {
@@ -930,46 +956,20 @@ function Transportista() {
               <MapPin className="w-5 h-5" />
               Información de Ruta
             </h3>
-            <div className="space-y-4">
-              <div className="field-group two-cols">
-                <div className="field">
-                  <label className="label">Aduana de Salida</label>
-                  <Input 
-                    placeholder="Nombre de la aduana" 
-                    value={form.transporte.ruta.aduanaSalida} 
-                    onChange={(e) => setForm({ ...form, transporte: { ...form.transporte, ruta: { ...form.transporte.ruta, aduanaSalida: e.target.value.slice(0, 50) } } })}
-                    maxLength={50}
-                  />
-                </div>
-                <div className="field">
-                  <label className="label">Aduana de Entrada</label>
-                  <Input 
-                    placeholder="Nombre de la aduana" 
-                    value={form.transporte.ruta.aduanaEntrada} 
-                    onChange={(e) => setForm({ ...form, transporte: { ...form.transporte, ruta: { ...form.transporte.ruta, aduanaEntrada: e.target.value.slice(0, 50) } } })}
-                    maxLength={50}
-                  />
-                </div>
-              </div>
-              <div className="field-group two-cols">
-                <div className="field">
-                  <label className="label">País de Destino</label>
-                  <Select value={form.transporte.ruta.paisDestino} onChange={(e) => setForm({ ...form, transporte: { ...form.transporte, ruta: { ...form.transporte.ruta, paisDestino: e.target.value } } })}>
-                    {PAISES_2.map((p) => <option key={p} value={p}>{p}</option>)}
-                  </Select>
-                </div>
-                <div className="field">
-                  <label className="label">Kilómetros Aproximados</label>
-                  <Input 
-                    placeholder="0" 
-                    type="number"
-                    inputMode="numeric" 
-                    value={form.transporte.ruta.kilometrosAproximados} 
-                    onChange={(e) => setForm({ ...form, transporte: { ...form.transporte, ruta: { ...form.transporte.ruta, kilometrosAproximados: e.target.value.replace(/[^0-9]/g, "") } } })}
-                  />
-                </div>
-              </div>
-            </div>
+            <MapaRuta
+              setRouteInfo={(routeInfo) =>
+                setForm((prevForm) => ({
+                  ...prevForm,
+                  transporte: {
+                    ...prevForm.transporte,
+                    ruta: {
+                      ...prevForm.transporte.ruta,
+                      ...routeInfo,
+                    },
+                  },
+                }))
+              }
+            />
           </div>
         </div>
 
@@ -1298,8 +1298,8 @@ function Transportista() {
       {tab === "declaraciones" && (
         <div className="space-y-6">
           {/* Dashboard de Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card title="Total" className="fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <Card title="Total" className="fade-in lg:col-span-1">
               <div className="flex items-center justify-between">
                 <div className="text-3xl font-bold text-[var(--text)]">{stats.total}</div>
                 <FileText className="w-10 h-10 text-blue-500" />
@@ -1307,15 +1307,7 @@ function Transportista() {
               <div className="text-xs text-[var(--subtle)] mt-2">Declaraciones totales</div>
             </Card>
             
-            <Card title="Pendientes" className="fade-in">
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-gray-600">{stats.pendientes}</div>
-                <Clock className="w-10 h-10 text-gray-500" />
-              </div>
-              <div className="text-xs text-[var(--subtle)] mt-2">En proceso</div>
-            </Card>
-            
-            <Card title="Validadas" className="fade-in">
+            <Card title="Validadas" className="fade-in lg:col-span-1">
               <div className="flex items-center justify-between">
                 <div className="text-3xl font-bold text-green-600">{stats.validadas}</div>
                 <CheckCircle className="w-10 h-10 text-green-500" />
@@ -1323,12 +1315,58 @@ function Transportista() {
               <div className="text-xs text-[var(--subtle)] mt-2">Aprobadas</div>
             </Card>
             
-            <Card title="Rechazadas" className="fade-in">
+            <Card title="Rechazadas" className="fade-in lg:col-span-1">
               <div className="flex items-center justify-between">
                 <div className="text-3xl font-bold text-red-600">{stats.rechazadas}</div>
                 <XCircle className="w-10 h-10 text-red-500" />
               </div>
               <div className="text-xs text-[var(--subtle)] mt-2">No aprobadas</div>
+            </Card>
+
+            <Card title="Pendientes" className="fade-in lg:col-span-1">
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold text-gray-600">{stats.pendientes}</div>
+                <Clock className="w-10 h-10 text-gray-500" />
+              </div>
+              <div className="text-xs text-[var(--subtle)] mt-2">En proceso</div>
+            </Card>
+
+            <Card title="Valor Total" className="fade-in lg:col-span-1">
+              <div className="flex items-center justify-between flex-wrap">
+                                                                                        <div className="text-2xl font-bold text-purple-600">
+                                                                                          {exchangeRates ? (
+                                                                                            formatCurrency(list.reduce((acc, x) => acc + Number(x.valor_aduana_total), 0) * exchangeRates[selectedCurrency], selectedCurrency)
+                                                                                          ) : (
+                                                                                            formatCurrency(list.reduce((acc, x) => acc + Number(x.valor_aduana_total), 0), 'USD')
+                                                                                          )}
+                                                                                        </div>                <CurrencyDollar className="w-10 h-10 text-purple-500" />
+              </div>
+              <div className="text-xs text-[var(--subtle)] mt-2">Valor total declarado</div>
+              <Select value={selectedCurrency} onChange={(e) => setSelectedCurrency(e.target.value)} className="mt-2">
+                {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
+              </Select>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <Card title="Distribución de Estados" className="fade-in lg:col-span-1">
+              <DeclarationsPieChart data={stats} />
+            </Card>
+            <Card title="Declaraciones por Mes" className="fade-in lg:col-span-2">
+              <DeclarationsBarChart data={
+                list.reduce((acc, x) => {
+                  const month = new Date(x.fecha_emision).toLocaleString('es-ES', { month: 'short' });
+                  const year = new Date(x.fecha_emision).getFullYear();
+                  const key = `${month} ${year}`;
+                  const existing = acc.find(item => item.name === key);
+                  if (existing) {
+                    existing.declaraciones += 1;
+                  } else {
+                    acc.push({ name: key, declaraciones: 1 });
+                  }
+                  return acc;
+                }, [])
+              } />
             </Card>
           </div>
 
