@@ -704,11 +704,11 @@ function Transportista() {
   // Calcular estadísticas para dashboard
   const stats = {
     total: list.length,
-    validadas: list.filter(x => x.estado === "VALIDADA").length,
-    rechazadas: list.filter(x => x.estado === "RECHAZADA").length,
-    enRevision: list.filter(x => x.estado === "EN REVISION").length,
-    confirmadas: list.filter(x => x.estado === "CONFIRMADO").length,
-    pendientes: list.filter(x => x.estado === "PENDIENTE").length,
+    VALIDADA: list.filter(x => x.estado === "VALIDADA").length,
+    RECHAZADA: list.filter(x => x.estado === "RECHAZADA").length,
+    'EN REVISION': list.filter(x => x.estado === "EN REVISION").length,
+    CONFIRMADO: list.filter(x => x.estado === "CONFIRMADO").length,
+    PENDIENTE: list.filter(x => x.estado === "PENDIENTE").length,
   };
 
   return (
@@ -1298,54 +1298,66 @@ function Transportista() {
       {tab === "declaraciones" && (
         <div className="space-y-6">
           {/* Dashboard de Estadísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card title="Total" className="fade-in lg:col-span-1">
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-[var(--text)]">{stats.total}</div>
-                <FileText className="w-10 h-10 text-blue-500" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-blue-200 bg-blue-50/30 p-6 shadow-md transition-all duration-300 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1">
+              <div className="absolute -right-4 -top-4 text-blue-500 opacity-10">
+                <FileText size={80} weight="fill" />
               </div>
-              <div className="text-xs text-[var(--subtle)] mt-2">Declaraciones totales</div>
-            </Card>
-            
-            <Card title="Validadas" className="fade-in lg:col-span-1">
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-green-600">{stats.validadas}</div>
-                <CheckCircle className="w-10 h-10 text-green-500" />
+              <div className="relative">
+                <div className="text-sm font-semibold uppercase text-blue-600">Total</div>
+                <div className="text-4xl font-bold text-blue-800 mt-2">{stats.total}</div>
+                <div className="text-sm text-blue-700/80 mt-1">Declaraciones totales</div>
               </div>
-              <div className="text-xs text-[var(--subtle)] mt-2">Aprobadas</div>
-            </Card>
-            
-            <Card title="Rechazadas" className="fade-in lg:col-span-1">
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-red-600">{stats.rechazadas}</div>
-                <XCircle className="w-10 h-10 text-red-500" />
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border-2 border-green-200 bg-green-50/30 p-6 shadow-md transition-all duration-300 hover:border-green-400 hover:shadow-xl hover:-translate-y-1">
+              <div className="absolute -right-4 -top-4 text-green-500 opacity-10">
+                <CheckCircle size={80} weight="fill" />
               </div>
-              <div className="text-xs text-[var(--subtle)] mt-2">No aprobadas</div>
-            </Card>
-
-            <Card title="Pendientes" className="fade-in lg:col-span-1">
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold text-gray-600">{stats.pendientes}</div>
-                <Clock className="w-10 h-10 text-gray-500" />
+              <div className="relative">
+                <div className="text-sm font-semibold uppercase text-green-600">Validadas</div>
+                <div className="text-4xl font-bold text-green-800 mt-2">{stats.VALIDADA}</div>
+                <div className="text-sm text-green-700/80 mt-1">Aprobadas</div>
               </div>
-              <div className="text-xs text-[var(--subtle)] mt-2">En proceso</div>
-            </Card>
-
-            <Card title="Valor Total" className="fade-in lg:col-span-1">
-              <div className="flex items-center justify-between flex-wrap">
-                                                                                        <div className="text-2xl font-bold text-purple-600">
-                                                                                          {exchangeRates ? (
-                                                                                            formatCurrency(list.reduce((acc, x) => acc + Number(x.valor_aduana_total), 0) * exchangeRates[selectedCurrency], selectedCurrency)
-                                                                                          ) : (
-                                                                                            formatCurrency(list.reduce((acc, x) => acc + Number(x.valor_aduana_total), 0), 'USD')
-                                                                                          )}
-                                                                                        </div>                <CurrencyDollar className="w-10 h-10 text-purple-500" />
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border-2 border-red-200 bg-red-50/30 p-6 shadow-md transition-all duration-300 hover:border-red-400 hover:shadow-xl hover:-translate-y-1">
+              <div className="absolute -right-4 -top-4 text-red-500 opacity-10">
+                <XCircle size={80} weight="fill" />
               </div>
-              <div className="text-xs text-[var(--subtle)] mt-2">Valor total declarado</div>
-              <Select value={selectedCurrency} onChange={(e) => setSelectedCurrency(e.target.value)} className="mt-2">
-                {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
-              </Select>
-            </Card>
+              <div className="relative">
+                <div className="text-sm font-semibold uppercase text-red-600">Rechazadas</div>
+                <div className="text-4xl font-bold text-red-800 mt-2">{stats.RECHAZADA}</div>
+                <div className="text-sm text-red-700/80 mt-1">No aprobadas</div>
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border-2 border-gray-200 bg-gray-50/30 p-6 shadow-md transition-all duration-300 hover:border-gray-400 hover:shadow-xl hover:-translate-y-1">
+              <div className="absolute -right-4 -top-4 text-gray-500 opacity-10">
+                <Clock size={80} weight="fill" />
+              </div>
+              <div className="relative">
+                <div className="text-sm font-semibold uppercase text-gray-600">Pendientes</div>
+                <div className="text-4xl font-bold text-gray-800 mt-2">{stats.PENDIENTE}</div>
+                <div className="text-sm text-gray-700/80 mt-1">En proceso</div>
+              </div>
+            </div>
+            <div className="relative overflow-hidden rounded-2xl border-2 border-purple-200 bg-purple-50/30 p-6 shadow-md transition-all duration-300 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
+              <div className="absolute -right-4 -top-4 text-purple-500 opacity-10">
+                <CurrencyDollar size={80} weight="fill" />
+              </div>
+              <div className="relative">
+                <div className="text-sm font-semibold uppercase text-purple-600">Valor Total</div>
+                <div className="text-3xl font-bold text-purple-800 mt-2">
+                  {exchangeRates ? (
+                    formatCurrency(list.reduce((acc, x) => acc + Number(x.valor_aduana_total), 0) * exchangeRates[selectedCurrency], selectedCurrency)
+                  ) : (
+                    formatCurrency(list.reduce((acc, x) => acc + Number(x.valor_aduana_total), 0), 'USD')
+                  )}
+                </div>
+                <div className="text-sm text-purple-700/80 mt-1">Valor total declarado</div>
+                <Select value={selectedCurrency} onChange={(e) => setSelectedCurrency(e.target.value)} className="mt-2 !w-full !py-1 !text-xs">
+                  {MONEDAS.map((m) => <option key={m} value={m}>{m}</option>)}
+                </Select>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

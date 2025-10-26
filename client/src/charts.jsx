@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 
 const COLORS = { 
   VALIDADA: '#22C55E', 
@@ -23,8 +23,8 @@ export function DeclarationsPieChart({ data }) {
           cx="50%"
           cy="50%"
           labelLine={false}
-          outerRadius={80}
-          fill="#8884d8"
+          outerRadius={100}
+          innerRadius={60}
           dataKey="value"
           nameKey="name"
           label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -39,7 +39,7 @@ export function DeclarationsPieChart({ data }) {
           }}
         >
           {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#8884d8'} />
+            <Cell key={`cell-${index}`} fill={COLORS[entry.name] || '#8884d8'} stroke="#FFF" strokeWidth={2}/>
           ))}
         </Pie>
         <Tooltip />
@@ -52,13 +52,20 @@ export function DeclarationsPieChart({ data }) {
 export function DeclarationsBarChart({ data }) {
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="declaraciones" fill="#3B82F6" />
+      <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <defs>
+          <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.2}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="name" axisLine={false} tickLine={false} />
+        <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
+        <Tooltip cursor={{fill: 'transparent'}} />
+        <Bar dataKey="declaraciones" fill="url(#barGradient)" radius={[4, 4, 0, 0]}>
+          <LabelList dataKey="declaraciones" position="top" style={{ fill: 'var(--text)' }} />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
