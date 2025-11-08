@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "src/index.js",
+  "main": "src/start.js",
   "scripts": {
-    "dev": "node --watch src/index.js",
-    "start": "node src/index.js",
+    "dev": "node --watch src/start.js",
+    "start": "node src/start.js",
     "db:reset": "psql \"$DATABASE_URL\" -f sql/schema.sql && psql \"$DATABASE_URL\" -f sql/seed.sql"
   },
   "dependencies": {
@@ -17,6 +17,7 @@
     "express-async-errors": "^3.1.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.5"
   }
