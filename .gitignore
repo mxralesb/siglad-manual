@@ -65,3 +65,11 @@ build/
 .Trashes
 ehthumbs.db
 Thumbs.db
+client/node_modules/
+server/node_modules/
+service/__pycache__/
+.env
+*.env
+server/.env
+client/.env
+service/.env
